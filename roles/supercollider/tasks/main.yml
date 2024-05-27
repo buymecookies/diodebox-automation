@@ -1,0 +1,8 @@
+---
+# tasks file for supercollider
+
+- name: install supercollider 
+  apt:
+    name: supercollider
+    state: latest
+
