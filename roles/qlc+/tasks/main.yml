@@ -1,7 +1,33 @@
 ---
 # tasks file for qlc
 
+- name: install xorg
+  apt:
+    name: xorg
+    state: latest
+
 - name: install qlc +
   apt:
     name: qlcplus
     state: latest
+
+- name: install qlc script
+  template: 
+    src: qlcplus-start.sh.j2
+    dest: /usr/sbin/qlcplus-start.sh
+    mode: '0770'
+
+- name: template qlc service
+  template:
+    src: qlc.service.j2
+    dest: /etc/systemd/system/qlc.service
+
+- name: enable and start qlc srvice
+  systemd:
+    daemon-reload: true
+    name: qlc.service
+    state: started
+    enabled: true
+  
+
+
