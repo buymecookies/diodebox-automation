@@ -6,3 +6,30 @@
     name: supercollider
     state: latest
 
+- name: template start script
+  template:
+    src: launch.sh.j2
+    dest: /usr/sbin/launch_supercollider.sh
+    mode: '0770'
+
+- name: template sc service
+  template:
+    src: sc.service.j2
+    dest: /etc/systemd/system/sc.service
+
+- name: enable and start sc srvice
+  systemd:
+    daemon-reload: true
+    name: sc.service
+    state: started
+    enabled: true
+
+- name: create working dir
+  file:
+    path: /var/opt/sc/
+    state: directory
+
+- name: template
+  template:
+    src: demo.scd.j2
+    dest: /var/opt/sc/demo.scd
