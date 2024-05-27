@@ -1,0 +1,7 @@
+---
+- name: install packages required for project
+  hosts: all
+  become: yes
+  roles:
+    - qlc+
+    - supercollider
