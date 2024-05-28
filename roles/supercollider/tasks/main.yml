@@ -6,6 +6,16 @@
     name: supercollider
     state: latest
 
+- name: install jackd
+  apt:
+    name: jackd
+    state: latest
+
+- name: template asound.conf
+  template:
+    src: asound.conf.j2
+    dest: /etc/asound.conf
+
 - name: template start script
   template:
     src: launch.sh.j2
@@ -29,7 +39,13 @@
     path: /var/opt/sc/
     state: directory
 
-- name: template
+- name: template demo file
   template:
     src: demo.scd.j2
     dest: /var/opt/sc/demo.scd
+
+- name: link demo file
+  file:
+    state: link
+    dest: /var/opt/sc/project.scd
+    src: /var/opt/sc/demo.scd 

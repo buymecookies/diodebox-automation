@@ -1,1 +1,5 @@
-sclang /var/opt/sc/demo.scd
+#!/bin/bash
+#export XAUTHORITY=/home/rpostema/.Xauthority
+export PATH=/usr/local/bin:$PATH
+export JACK_NO_AUDIO_RESERVATION=1
+sclang /var/opt/sc/project.scd &
