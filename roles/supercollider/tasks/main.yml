@@ -3,49 +3,79 @@
 
 - name: install supercollider 
   apt:
-    name: supercollider
+    name: "{{ item }}"  
     state: latest
+  loop:
+    - jackd
+    - supercollider
+    #- gnome-core
+    - task-gnome-desktop
 
-- name: install jackd
-  apt:
-    name: jackd
-    state: latest
+- name: "add {{username}} user"
+  user:
+    name: "{{username}}"
+    groups: adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,input,render,netdev,gpio,i2c,spi
+    append: yes
 
 - name: template asound.conf
   template:
     src: asound.conf.j2
     dest: /etc/asound.conf
 
+- name: enable gnome deskt
+  systemd:
+    name: gdm3
+    state: started
+    enabled: yes 
+
 - name: template start script
   template:
     src: launch.sh.j2
     dest: /usr/sbin/launch_supercollider.sh
+    owner: "{{username}}"
+    group: "{{username}}"
     mode: '0770'
 
-- name: template sc service
-  template:
-    src: sc.service.j2
-    dest: /etc/systemd/system/sc.service
+- name: create directory
+  file:
+    path: "/home/{{ username }}/.config/SuperCollider/"
+    state: directory
+    owner: "{{username}}"
+    group: "{{username}}"
 
-- name: enable and start sc srvice
-  systemd:
-    daemon-reload: true
-    name: sc.service
-    state: started
-    enabled: true
+- name: template startup.scd
+  template:
+    src: startup.scd.j2
+    dest: "/home/{{ username }}/.config/SuperCollider/startup.scd"
+    owner: "{{username}}"
+    group: "{{username}}"
 
 - name: create working dir
   file:
     path: /var/opt/sc/
+    owner: "{{username}}"
+    group: "{{username}}"
     state: directory
 
 - name: template demo file
   template:
     src: demo.scd.j2
     dest: /var/opt/sc/demo.scd
+    owner: "{{username}}"
+    group: "{{username}}"
+
 
 - name: link demo file
   file:
     state: link
     dest: /var/opt/sc/project.scd
+    owner: "{{username}}"
+    group: "{{username}}"
     src: /var/opt/sc/demo.scd 
+
+- name: "create reboot cron entry for user {{username}}"
+  cron:
+    name: 'start supercollider at reboot'
+    special_time: reboot
+    job: /usr/sbin/launch_supercollider.sh
+    user: "{{ username }}"

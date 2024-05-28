@@ -3,4 +3,4 @@
 export PATH=/usr/local/bin:$PATH
 export JACK_NO_AUDIO_RESERVATION=1
 /usr/bin/jackd -P95 -dalsa -dhw:2,0 &
-sclang /var/opt/sc/project.scd &
+sclang -D /var/opt/sc/project.scd &
