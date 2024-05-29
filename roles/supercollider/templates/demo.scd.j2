@@ -1,39 +1,46 @@
-// https://en.wikibooks.org/wiki/Designing_Sound_in_SuperCollider/Rain
+{% raw %}//s.waitForBoot{ {SinOsc.ar([400, 404])}.play } {% endraw %}
+
+{% raw %}s.waitForBoot{ {{WhiteNoise.ar}.dup(12).mean.dup * 0.5}.play } {% endraw %}
+
+// MIDIIn.connect;
+// s.waitForBoot{ 
+(
+//SynthDef("sik-goo", { |out, freq = 440, formfreq = 100, gate = 0.0, bwfreq = 800|
+//    var x;
+//    x = Formant.ar(
+//        SinOsc.kr(0.02, 0, 10, freq),
+//        formfreq,
+//        bwfreq
+//    );
+//    x = EnvGen.kr(Env.adsr, gate, Latch.kr(gate, gate)) * x;
+//    Out.ar(out, x);
+//}).add;
+//)
 //
-// 38.1
-~dropletonhard = {|dur=0.0005| Env.perc(dur/2, dur/2, 1, [-4, 4])};
-~dropletonhard.value.plot
-
-// 38.2
-x = { {WhiteNoise.ar}.dup(12).mean.dup * 0.5}.play;
-x.free;
-
-// 38.3
-(
-x = {
-	var amount=MouseX.kr(0,1); // move mouse left/right to change amount
-	var n1 = WhiteNoise.ar.abs * amount + (1-amount);
-	var n2 = WhiteNoise.ar(2pi);
-	var gaussian = sqrt(-2 * log(n1)) * cos(n2);
-	gaussian.dup * 0.5
-}.play;
-)
-x.free;
-
-// 38.4
-(
-x = {
-	var gaus, osc;
-	gaus = {WhiteNoise.ar}.dup(12).sum;
-	gaus = LPF.ar(BPF.ar(gaus, 50, 1/0.4), 500);
-	
-	osc = SinOsc.ar(gaus.linlin(-1, 1, 40, 80)) * gaus.squared * 10;
-	osc = (osc - 0.35).max(0);
-
-	2.do {
-		osc = HPF.ar(osc, 500);
-	};
-
-	osc.dup
-}.play
-)
+// x = Synth("sik-goo");
+//set the action:
+//(
+//~noteOn = {arg src, chan, num, vel;
+//    x.set(\freq, num.midicps / 4.0);
+//    x.set(\gate, vel / 200 );
+//    x.set(\formfreq, vel / 127 * 1000);
+//};
+//MIDIIn.addFuncTo(\noteOn, ~noteOn);
+//
+//~noteOff = { arg src,chan,num,vel;
+//    x.set(\gate, 0.0);
+//};
+//MIDIIn.addFuncTo(\noteOff, ~noteOff);
+//
+//~bend = { arg src,chan,val;
+//    //(val * 0.048828125).postln;
+//    x.set(\bwfreq, val * 0.048828125 );
+//};
+//MIDIIn.addFuncTo(\bend, ~bend);
+//)
+//
+////cleanup
+//MIDIIn.removeFuncFrom(\noteOn, ~noteOn);
+//MIDIIn.removeFuncFrom(\noteOff, ~noteOff);
+//MIDIIn.removeFuncFrom(\bend, ~bend);
+// }

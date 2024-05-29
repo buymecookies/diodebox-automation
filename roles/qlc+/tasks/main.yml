@@ -1,11 +1,5 @@
 ---
 # tasks file for qlc
-
-- name: install xorg
-  apt:
-    name: xorg
-    state: latest
-
 - name: install qlc +
   apt:
     name: qlcplus
