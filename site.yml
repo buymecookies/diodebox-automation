@@ -1,6 +1,6 @@
 ---
 - name: install packages required for project
-  hosts: all
+  hosts: all,!diode-test
   become: yes
   roles:
     - qlc+
