@@ -8,8 +8,6 @@
   loop:
     - jackd
     - supercollider
-    #- gnome-core
-    - task-gnome-desktop
 
 - name: "add {{username}} user"
   user:
@@ -21,12 +19,6 @@
   template:
     src: asound.conf.j2
     dest: /etc/asound.conf
-
-- name: enable gnome deskt
-  systemd:
-    name: gdm3
-    state: started
-    enabled: yes 
 
 - name: template start script
   template:
