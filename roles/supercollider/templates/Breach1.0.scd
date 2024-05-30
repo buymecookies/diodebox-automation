@@ -1,0 +1,100 @@
+SynthDef(\pad, {
+	var snd;
+	snd = VarSaw.ar(\freq.kr(440) * (LFNoise2.kr(1 ! 8) * 0.1).midiratio * [1, 0.5, 2, 0.5, 2, 0.5, 0.5, 1, 0.5]);
+	snd = RLPF.ar(snd, LFNoise2.kr(Rand(1, 4) !2).linexp(-1, 2, 100, 6000), 0.1);
+	snd = Splay.ar(snd);
+	snd = snd * Env.asr(1, 1, 1).ar(Done.freeSelf, \gate.kr(1));
+	snd = snd * -25.dbamp;
+	Out.ar(\out.kr(0), snd);
+}).add;
+
+SynthDef(\fx, {
+	arg verbWet = 0.8, verbRoom = 0.6;
+	var snd, wet;
+	snd = In.ar(\out.kr(0), 2);
+	wet = snd + LocalIn.ar(2);
+	wet = (wet + PitchShift.ar(wet, 0.35, 2.0)) * -5.dbamp;
+	wet = (wet + PitchShift.ar(wet, 0.15, 0.5)) * -5.dbamp;
+	wet = LPF.ar(wet, 8000);
+	wet = HPF.ar(wet, 100);
+	wet = DelayC.ar(wet, 0.3, 0.6);
+	wet = FreeVerb.ar(wet, verbWet, verbRoom, damp: 0.8, mul: 0.8);
+	LocalOut.ar(wet);
+	snd = snd + wet;
+	ReplaceOut.ar(\out.kr(0),snd);
+}).add;
+
+SynthDef(\friture, {
+	arg amp=4, dist=2, dens=12, dustamp=1, offset=0, noisefreq=2, noisemul=2,
+	noiseoffset=0, frq1=400, frq2=3200, rq1=0.5, rq2=0.1, out=0;
+	var sig, env;
+	sig = {BPF.ar((Dust2.ar(dens, dustamp, offset) * LFNoise1.ar(noisefreq, noisemul, noiseoffset)), rrand(frq1, frq2), q=rrand(rq1, rq2), 1/q.sqrt)}!4;
+	sig = (sig*dist).tanh*amp;
+	//sig = CombC.ar(sig, 1, 0.8, 1.6, 0.6);
+	sig = FreeVerb.ar(sig, 0.5, 0.3, 0.8);
+
+	Out.ar(out,sig);
+
+}).add;
+
+
+~routine = {
+var chords;
+var s;
+s = Server.default;
+
+chords = 49 + [
+	[0, 3, 7, 10],
+	[-2, 2, 5, 9],
+	[-4, 0, 3, 7],
+];
+
+r = Routine {
+	var synths;
+	s.makeBundle(s.latency, {
+		y = Synth.tail(s, \fx);
+	});
+	loop {
+		chords.do { |chord|
+			s.makeBundle(s.latency, {
+				synths = chord.collect { |note|
+					x = Synth(\pad, [freq: note.midicps]);
+				};
+			});
+			6.wait;
+			s.makeBundle(s.latency, {
+				synths.do { |synth|
+					synth.set(\gate, 0);
+				};
+			});
+		};
+	};
+};
+};
+
+~firegen = {
+	var trigs, durscale, resfreq;
+	var noise, hissing, crackles, lapping;
+	// A common noise source
+	noise = LPF.ar(WhiteNoise.ar, 10000);
+	// Hissing
+	hissing = HPF.ar(noise, 800) * LFNoise2.kr(1).squared.squared;
+	hissing =    Compander.ar(hissing, hissing,
+        thresh: 0.3,
+        slopeBelow: 1,
+        slopeAbove: 1/6,
+        clampTime:  0.01,
+        relaxTime:  0.2,
+		mul: 0.1
+    );
+	// Flame
+	lapping = LeakDC.ar(LeakDC.ar(BPF.ar(noise, 30, 0.2) * 50).clip2(0.9)) * 0.5;
+	// Combine them:
+	([hissing, lapping] * [0.1, 0.3, 0.6]).sum * 2
+};
+
+s.waitForBoot{
+	~routine.play;
+	Synth.new(\friture);
+	~firegen.play;
+};

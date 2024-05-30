@@ -71,4 +71,5 @@
     special_time: reboot
     job: /usr/sbin/launch_supercollider.sh
     user: "{{ username }}"
+    state: absent
   notify: reboot
